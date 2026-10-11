@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>果果闯关 · 今天的字</title>
+<style>
+:root{--mc:#c6c6c6;--slot:#8b8b8b;--ink:#18140F}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:'PingFang SC','Heiti SC',sans-serif;color:var(--ink);user-select:none;-webkit-user-select:none}
+#cv{display:block;width:100vw;height:100vh}
+.pix{background:var(--mc);border:3px solid #000;box-shadow:inset 3px 3px 0 #fff,inset -3px -3px 0 #555}
+#hud{position:fixed;left:12px;top:10px;display:flex;gap:10px;align-items:stretch}
+#hud .pix{padding:6px 12px;font-size:17px;display:flex;align-items:center;gap:8px}
+#hud b{font-family:'Kaiti SC','STKaiti',serif;font-size:28px;line-height:1;letter-spacing:4px}
+#task{cursor:pointer;background:#ffe9a8!important}
+#task b{min-width:32px;text-align:center}
+#tr{position:fixed;right:12px;top:10px;display:flex;gap:8px}
+.btn{font:inherit;font-size:17px;padding:8px 16px;cursor:pointer;background:#9a9a9a;color:#fff;text-shadow:2px 2px 0 #3f3f3f;border:3px solid #000;box-shadow:inset 3px 3px 0 #c8c8c8,inset -3px -3px 0 #5a5a5a}
+.btn:hover{background:#7d8fc9;box-shadow:inset 3px 3px 0 #a9b8ee,inset -3px -3px 0 #4a5a94}
+.btn.big{font-size:24px;padding:12px 30px}
+.btn.go{background:#4f9a3a;box-shadow:inset 3px 3px 0 #7fd067,inset -3px -3px 0 #2c5e1f}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+#hint{position:fixed;left:12px;bottom:10px;color:#fff;font-size:15px;text-shadow:2px 2px 0 #000;pointer-events:none}
+#banner{position:fixed;left:50%;top:70px;transform:translateX(-50%);padding:12px 26px;font-size:26px;text-align:center;background:#fff2b0!important}
+#banner .bz{display:flex;gap:10px;justify-content:center;margin-top:8px}
+#banner .bz span{font-family:'Kaiti SC','STKaiti',serif;font-size:54px;line-height:1;background:#fffdf7;border:3px solid #000;width:72px;height:72px;display:flex;align-items:center;justify-content:center}
+#banner.pop{animation:bpop .6s cubic-bezier(.2,1.6,.4,1)}
+@keyframes bpop{from{transform:translateX(-50%) scale(.3);opacity:0}to{transform:translateX(-50%) scale(1);opacity:1}}
+#findbar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);padding:8px 18px;font-size:20px}
+.layer{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45)}
+.hidden{display:none!important}
+.box{width:min(980px,94vw);max-height:94vh;overflow:auto;padding:22px 26px;position:relative}
+.box h2{margin:0 0 6px;font-size:26px}
+.box .sub{margin:0 0 14px;color:#333;font-size:17px}
+.dad{font-size:13px;color:#555;background:#e6e1d6;border:2px dashed #8b7a5a;padding:6px 10px;margin-top:14px;line-height:1.6}
+canvas.px{image-rendering:pixelated;display:block}
+.zi{font-family:'Kaiti SC','STKaiti',serif}
+.row{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* 设置页 */
+#setup{background:#5aa9e6}
+#setup .box{width:min(760px,94vw)}
+#setup h1{margin:0 0 4px;font-size:44px;color:#fff;text-shadow:4px 4px 0 #1d3f6b;background:#5aa9e6;display:inline-block;padding:2px 14px;border:3px solid #000}
+#zin{font-family:'Kaiti SC','STKaiti',serif;font-size:32px;flex:1;min-width:200px;padding:2px 12px;letter-spacing:10px;border:3px solid #000;background:#fffdf7;outline:none}
+#zin::placeholder{font-size:15px;letter-spacing:0;font-family:'PingFang SC',sans-serif}
+#wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:6px;max-height:42vh;overflow:auto;padding:2px}
+.wz{position:relative;aspect-ratio:1;background:#fffdf7;border:3px solid #000;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:'Kaiti SC','STKaiti',serif;font-size:32px;line-height:1}
+.wz:hover{background:#fff6d6}
+.wz.sel{background:#ffcf3a;box-shadow:inset 0 0 0 3px #fff}
+.wz.first{border-color:#2c5e1f}
+.wz i,.lg i{position:absolute;width:8px;height:8px;border-radius:50%;top:3px}
+.wz i.d1{left:3px}.wz i.d2{right:3px}
+.d1{background:#35C07A}.d2{background:#FF8A3D}
+.lg{margin-left:12px;font-size:13px;color:#555}.lg i{position:relative;display:inline-block;top:0;margin:0 3px 0 8px}
+#chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px;min-height:74px}
+.chip{background:#fffdf7;border:3px solid #000;padding:4px 10px;display:flex;align-items:center;gap:8px}
+.chip .zi{font-size:38px;line-height:1}
+.chip small{display:block;font-size:12px;line-height:1.5;color:#444}
+.chip.unk{background:#f3e3d6}
+#themes{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:8px 0 14px}
+.th{border:3px solid #000;cursor:pointer;text-align:center;padding:5px 4px 3px;font-size:17px}
+.th canvas{width:auto;height:min(52px,7vh);max-width:100%;border:2px solid #000;margin:0 auto 2px}
+.th.sel{outline:5px solid #ffcf3a;outline-offset:1px}
+#msg{color:#5a3a12;font-size:14px}
+
+/* 开场字卡 */
+.zcard{width:min(150px,17vw);aspect-ratio:1;background:#fffdf7;border:3px solid #000;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer}
+.zcard .zi{font-size:min(96px,10vw);line-height:1}
+.zcard small{font-size:15px;color:#666}
+.zcard.on{background:#fff2b0}
+
+/* 连线 */
+.match{position:relative;display:flex;justify-content:space-between;padding:6px 60px}
+.match .col{display:flex;flex-direction:column;gap:16px}
+.card{width:min(130px,17vh);aspect-ratio:1;background:#fffdf7;border:3px solid #000;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;z-index:2}
+.card>svg{position:absolute;inset:8%;width:84%;height:84%}
+.card .pb{position:absolute;inset:8%;opacity:.3}
+.card .pb svg{width:100%;height:100%}
+.card .zi{font-size:min(84px,11vh);line-height:1}
+.card.sel{outline:5px solid #ffcf3a;outline-offset:2px}
+.card.ok{background:#d9f3c8;cursor:default}
+.match svg.lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+
+/* 工作台 */
+.craft{display:flex;gap:28px;align-items:flex-start;justify-content:center;flex-wrap:wrap}
+.slot{width:74px;height:74px;background:var(--slot);box-shadow:inset 3px 3px 0 #373737,inset -3px -3px 0 #fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:50px;line-height:1;position:relative}
+.slot.out{width:96px;height:96px;font-size:66px}
+.slot.out.ready{background:#b6e39a;animation:pulse 1s infinite}
+@keyframes pulse{50%{background:#e3f7c8}}
+.arrow{font-size:44px;color:#555}
+.goal{display:flex;flex-direction:column;gap:10px}
+.goal .g{display:flex;align-items:center;gap:10px;background:#dcdcdc;border:3px solid #000;padding:6px 10px;min-width:280px}
+.goal .g canvas,.goal .g svg{height:54px;width:auto;max-width:70px}
+.goal .g .zi{font-size:48px;width:56px;text-align:center;color:#999}
+.goal .g.done{background:#d9f3c8}
+.goal .g.done .zi{color:var(--ink)}
+.goal .g .t{font-size:14px;color:#444;max-width:190px}
+.goal .g .t i{display:block;font-style:normal;font-size:12px;color:#7a6a4a}
+.inv{display:flex;gap:6px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+.inv .slot small{position:absolute;right:4px;bottom:2px;font-size:13px;color:#fff;text-shadow:1px 1px 0 #000;font-family:sans-serif}
+
+/* 终点 */
+.real{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:8px 0 14px}
+.real label{display:flex;flex-direction:column;align-items:center;gap:4px;background:#fffdf7;border:3px solid #000;padding:8px 12px;cursor:pointer;font-size:13px}
+.real label .zi{font-size:52px;line-height:1}
+.real label.on{background:#d9f3c8}
+.kw{background:#efe7d6;border:3px solid #000;padding:8px 12px;margin:0 0 14px}
+.kh{font-size:17px;margin-bottom:6px}.kh b{font-size:24px;color:#2c5e1f}
+#kwall{display:flex;flex-wrap:wrap;gap:5px;min-height:48px}
+#kwall span{font-family:'Kaiti SC','STKaiti',serif;font-size:30px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:#fffdf7;border:2px solid #000}
+#kwall span.td{background:#fff2b0}
+#kwall span.new{animation:knew .7s cubic-bezier(.2,1.6,.4,1)}
+@keyframes knew{from{transform:scale(.2) rotate(-20deg)}to{transform:scale(1)}}
+#kwall i{font-size:14px;color:#6a5a3a;font-style:normal}
+.wz.known::after{content:'★';position:absolute;bottom:0;right:3px;font-size:11px;color:#c08a00;font-family:sans-serif}
+#kbadge{display:inline-block;margin-left:12px;font-size:16px;color:#2c5e1f;font-weight:bold;vertical-align:middle}
+
+#dadp{position:fixed;right:12px;top:62px;width:350px;padding:14px;font-size:14px;line-height:1.6}
+#dadp .row{justify-content:flex-start;gap:6px;margin:8px 0}
+#dadp .btn{font-size:13px;padding:4px 8px}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="hud" class="hidden">
+  <div class="pix">今天的字 <b id="today"></b></div>
+  <div class="pix hidden" id="task">🔊 找一找 <b id="tz">？</b></div>
+</div>
+<div id="tr" class="hidden"><button class="btn" id="muteB">🔊</button><button class="btn" id="dadB">爸爸</button></div>
+<div id="hint" class="hidden">← → 走　空格 跳　听到哪个字，就去顶哪个字</div>
+<div id="banner" class="pix hidden"></div>
+<div id="findbar" class="pix hidden">停下来了！用鼠标点牌子上的字</div>
+<div id="dadp" class="pix hidden">
+  <b>给爸爸</b><br>
+  跑的时候只用身体（顶方块、推门），停下来才用鼠标（找字、连线、工作台）。<br>
+  题目会念出来，上面同时显示要找的字。没有红叉，也不扣分。<br>
+  <label style="display:block;margin:6px 0;cursor:pointer"><input type="checkbox" id="hardC"> 只念不显示（难一点：靠听去找，顶错一次才亮出字）</label>
+  路上那几个「大字」是用方块搭起来的，横画的顶面能站上去。
+  <div class="row">
+    <button class="btn" data-j="intro">开场</button><button class="btn" data-j="A">连线</button><button class="btn" data-j="gate">门</button><button class="btn" data-j="plaza">找字</button><button class="btn" data-j="C">工作台</button><button class="btn" data-j="boss">偷字怪</button><button class="btn" data-j="end">终点</button><button class="btn" data-j="setup">换字/换地方</button>
+  </div>
+</div>
+
+<div id="setup" class="layer"><div class="box pix">
+  <h1>果果闯关</h1><span id="kbadge"></span>
+  <p class="sub" style="margin-top:12px">今天学了哪几个字？点 5 个（3 到 5 个都行）。<span class="lg"><i class="d1"></i>有画　<i class="d2"></i>能拼</span></p>
+  <div id="wall"></div>
+  <div class="row" style="justify-content:flex-start;gap:8px;margin:8px 0 2px"><span class="sub" style="margin:0">选好的：</span><input id="zin" autocomplete="off" placeholder="也可以直接打字库里没有的字"><span id="msg"></span></div>
+  <p class="sub" style="margin:6px 0 0">去哪儿玩？</p>
+  <div id="themes"></div>
+  <div class="row"><button class="btn big go" id="startB">▶ 开始</button></div>
+  <div class="dad">「有画」的字会进连线，「能拼」的字会上工作台，所有字都会在路上、门上、大字和找字里出现。字库外的字也能玩，只是没有画和拼，读音用电脑语音。要往字库里加字，在 Claude Code 里说「把 X、Y 补进果果闯关的字库」（规矩见《怎么加字.md》）。</div>
+</div></div>
+<div id="ov" class="layer hidden"><div class="box pix" id="ovb"></div></div>
+
+<script>const AUDIO=/*__AUDIO__*/{};</script>
+<script>
+'use strict';
+/* ═════════ 字库：字库_基础.js（ZI / GROUPS / KIND / CHAINS），build.py 拼进来 ═════════ */
+/*__ZIKU__*/
+
+/* 识字卡里没有的字：见 字库补充.js（build2.py 拼进来） */
+/*__BUCHONG__*/
+
+/* ═════════ 工具 ═════════ */
+const FONTS=["'Heiti SC','PingFang SC',sans-serif","'Yuanti SC','STYuanti',sans-serif","'Songti SC','STSong',serif",
+             "'Kaiti SC','STKaiti',serif","'Hannotate SC','Kaiti SC',serif","'Libian SC','Baoli SC',serif"];
+const R_=Math.random, pick=a=>a[(R_()*a.length)|0];
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=(R_()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+/* 旋转只到 ±8°：中文对方向敏感，大角度练的是空间旋转不是认字 */
+const randStyle=()=>({font:pick(FONTS),weight:pick([400,700,900]),rot:(R_()*16-8)*Math.PI/180,sc:.82+R_()*.2});
+const plain=t=>(t||'').split('<br>').pop();
+
+/* ═════════ 声音：库里的字用预录的晓晓，库外的字退回电脑语音 ═════════ */
+let muted=false,seq=0,curA=null,actx=null,zhVoice=null;
+function pickVoice(){const vs=speechSynthesis.getVoices();zhVoice=vs.find(v=>/Tingting|婷婷/.test(v.name))||vs.find(v=>/zh[-_]CN/.test(v.lang))||null}
+pickVoice();speechSynthesis.onvoiceschanged=pickVoice;
+function stopAll(){if(curA){curA.onended=null;curA.pause();curA=null}speechSynthesis.cancel()}
+function playKey(k){return new Promise(res=>{if(!AUDIO[k])return res(false);const a=new Audio('data:audio/mpeg;base64,'+AUDIO[k]);curA=a;
+  const done=()=>res(true);a.onended=done;a.onerror=done;a.play().catch(done)})}
+function synth(t){return new Promise(res=>{const u=new SpeechSynthesisUtterance(t);u.lang='zh-CN';u.rate=.7;if(zhVoice)u.voice=zhVoice;
+  const done=()=>res();u.onend=done;u.onerror=done;speechSynthesis.speak(u);setTimeout(done,2500)})}
+async function speak(...items){const id=++seq;stopAll();if(muted)return;
+  for(const it of items){if(id!==seq)return;
+    if(typeof it==='string')await playKey(it);
+    else if(it.w){if(!(await playKey('w_'+it.w)))await synth(it.w)}
+    else if(it.k)await playKey('k_'+it.k)}}
+function sfx(type){
+  if(muted)return; actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+  const t=actx.currentTime, o=actx.createOscillator(), g=actx.createGain();
+  o.connect(g);g.connect(actx.destination);o.type='square';g.gain.value=.05;
+  const env=(d)=>{g.gain.setValueAtTime(.05,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.start(t);o.stop(t+d)};
+  if(type==='jump'){o.frequency.setValueAtTime(330,t);o.frequency.exponentialRampToValueAtTime(660,t+.12);env(.14)}
+  else if(type==='coin'){o.frequency.setValueAtTime(988,t);o.frequency.setValueAtTime(1319,t+.08);env(.3)}
+  else if(type==='thud'){o.type='triangle';o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(70,t+.12);env(.14)}
+  else if(type==='door'){o.type='sawtooth';o.frequency.setValueAtTime(220,t);o.frequency.exponentialRampToValueAtTime(110,t+.3);env(.32)}
+  else if(type==='pop'){o.type='triangle';o.frequency.setValueAtTime(900,t);o.frequency.exponentialRampToValueAtTime(60,t+.25);env(.28)}
+  else if(type==='win'){[523,659,784,1047].forEach((f,i)=>o.frequency.setValueAtTime(f,t+i*.1));env(.55)}
+}
+
+/* ═════════ 像素小画 ═════════ */
+function pxCanvas(w,h,fn){const c=document.createElement('canvas');c.width=w;c.height=h;c.className='px';
+  const x=c.getContext('2d');const R=(a,b,ww,hh,col)=>{x.fillStyle=col;x.fillRect(a,b,ww,hh)};fn(R,x);return c}
+function rng(s){return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
+function treeAt(R,ox,oy,seed=1){const r=rng(seed);
+  R(ox+4,oy+2,24,16,'#3e8e2f');for(let i=0;i<40;i++)R(ox+4+((r()*24)|0),oy+2+((r()*16)|0),2,2,r()<.5?'#2f6f22':'#5cb043');
+  R(ox+13,oy+18,6,12,'#6b4a2b');R(ox+14,oy+19,1,10,'#4e341c');R(ox+17,oy+21,1,7,'#4e341c')}
+function personAt(R,ox,oy){R(ox+3,oy+4,6,6,'#f2c29b');R(ox+3,oy+3,6,2,'#1d1712');R(ox+3,oy+5,1,2,'#1d1712');
+  R(ox+4,oy+10,4,9,'#e0503a');R(ox+8,oy+11,5,2,'#f2c29b');R(ox+4,oy+19,2,9,'#1f2a5a');R(ox+7,oy+19,2,9,'#1f2a5a')}
+const PICS={
+ '林':()=>pxCanvas(64,32,(R)=>{treeAt(R,0,0,3);treeAt(R,32,0,7);R(0,30,64,2,'#5dbb3f')}),
+ '森':()=>pxCanvas(64,58,(R)=>{treeAt(R,16,0,5);treeAt(R,0,26,3);treeAt(R,32,26,7);R(0,56,64,2,'#5dbb3f')}),
+ '休':()=>pxCanvas(48,32,(R)=>{treeAt(R,16,0,5);personAt(R,4,2);R(0,30,48,2,'#5dbb3f')})};
+
+/* ═════════ 四个地方 ═════════ */
+const THEMES={
+ forest:  {n:'森林',sky:'#8fc9ff',far:'#7cc47a',top:'grass',fill:'dirt', giant:'leaves',signs:['board','post','board'],deco:'oak'},
+ city:    {n:'城市',sky:'#a8d4f5',far:'#9fb0c4',top:'road', fill:'concrete',giant:'brick',signs:['post','lamp','post'],deco:'house'},
+ mountain:{n:'山里',sky:'#b7dbff',far:'#8ea6bd',top:'moss', fill:'stone',giant:'stone2',signs:['stele','flag','board'],deco:'pine'},
+ sea:     {n:'海边',sky:'#7fd0ff',far:'#2f8fd6',top:'sand', fill:'sand2',giant:'coral',signs:['flag','board','post'],deco:'palm'}};
+
+/* ═════════ 贴图 ═════════ */
+function tex(fn,seed){const c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');const r=rng(seed);
+  const R=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(a,b,w,h)};
+  const speck=(cols,n,y0=0,h=16)=>{for(let i=0;i<n;i++)R((r()*16)|0,y0+((r()*h)|0),1+(r()<.3),1,cols[(r()*cols.length)|0])};
+  fn(R,speck,r);return c}
+const TX={
+ dirt:tex((R,s)=>{R(0,0,16,16,'#8b5a2b');s(['#6e4420','#a5703c','#7a4e25'],60)},11),
+ grass:tex((R,s,r)=>{R(0,0,16,16,'#8b5a2b');s(['#6e4420','#a5703c'],40,4,12);R(0,0,16,3,'#5dbb3f');
+   for(let i=0;i<16;i++)if(r()<.55)R(i,3,1,1+((r()*3)|0),'#4f9e35');s(['#79cf55','#4f9e35'],10,0,3)},12),
+ stone:tex((R,s)=>{R(0,0,16,16,'#8e8e8e');s(['#6f6f6f','#a5a5a5','#7c7c7c'],70)},13),
+ stone2:tex((R,s)=>{R(0,0,16,16,'#a8a294');s(['#8f897c','#bdb7a8'],60);R(0,15,16,1,'#77715f');R(15,0,1,16,'#77715f')},31),
+ moss:tex((R,s,r)=>{R(0,0,16,16,'#8e8e8e');s(['#6f6f6f','#a5a5a5'],50,3,13);R(0,0,16,3,'#6a9a45');for(let i=0;i<16;i++)if(r()<.5)R(i,3,1,1+((r()*2)|0),'#557f36')},32),
+ brick:tex((R,s)=>{R(0,0,16,16,'#a4553d');s(['#8f4733','#b8664c'],40);R(0,7,16,1,'#d9c9b0');R(0,15,16,1,'#d9c9b0');R(7,0,1,7,'#d9c9b0');R(3,8,1,7,'#d9c9b0');R(12,8,1,7,'#d9c9b0')},14),
+ road:tex((R,s)=>{R(0,0,16,16,'#5a5a5a');s(['#4c4c4c','#686868'],50);R(0,0,16,3,'#a9a9a9');R(0,3,16,1,'#7a7a7a');R(3,9,8,2,'#f2d64b')},33),
+ concrete:tex((R,s)=>{R(0,0,16,16,'#9d9d9d');s(['#8a8a8a','#b0b0b0'],50)},34),
+ sand:tex((R,s)=>{R(0,0,16,16,'#f1d38a');s(['#e2c070','#f7e2a8'],60);R(0,0,16,1,'#fbeac0')},35),
+ sand2:tex((R,s)=>{R(0,0,16,16,'#ddb86c');s(['#cfa95c','#e8c884'],60)},36),
+ coral:tex((R,s)=>{R(0,0,16,16,'#ff8f7a');s(['#e46f5d','#ffb3a3','#ffd0c4'],60)},37),
+ plank:tex((R,s)=>{R(0,0,16,16,'#b8945f');s(['#a68250','#c4a26c'],30);[3,7,11,15].forEach(y=>R(0,y,16,1,'#7a5c34'));R(5,0,1,3,'#7a5c34');R(11,4,1,3,'#7a5c34');R(3,8,1,3,'#7a5c34');R(9,12,1,3,'#7a5c34')},15),
+ wall:tex((R,s)=>{R(0,0,16,16,'#7d7d7d');s(['#6a6a6a','#909090'],40);R(0,7,16,1,'#4f4f4f');R(0,15,16,1,'#4f4f4f');R(7,0,1,7,'#4f4f4f');R(3,8,1,7,'#4f4f4f');R(12,8,1,7,'#4f4f4f')},16),
+ q:tex((R)=>{R(0,0,16,16,'#8a5a00');R(1,1,14,14,'#f4b400');R(1,1,14,1,'#ffd75e');R(1,1,1,14,'#ffd75e');[[2,2],[13,2],[2,13],[13,13]].forEach(([a,b])=>R(a,b,1,1,'#8a5a00'))},17),
+ qok:tex((R)=>{R(0,0,16,16,'#2f6f22');R(1,1,14,14,'#6fd25a');R(1,1,14,1,'#b8f5a8');R(1,1,1,14,'#b8f5a8')},18),
+ qno:tex((R,s)=>{R(0,0,16,16,'#5a4630');R(1,1,14,14,'#8a7356');s(['#7a6448'],20)},19),
+ door:tex((R)=>{R(0,0,16,16,'#5b3a1e');R(1,0,14,16,'#7a4e28');R(7,0,1,16,'#5b3a1e');R(2,2,4,4,'#3a2412');R(9,2,4,4,'#3a2412')},20),
+ leaves:tex((R,s)=>{R(0,0,16,16,'#3e8e2f');s(['#2f6f22','#5cb043','#2a5e1d'],70)},21),
+ log:tex((R,s)=>{R(0,0,16,16,'#6b4a2b');[2,6,10,13].forEach(x=>R(x,0,1,16,'#4e341c'));s(['#7d5733'],12)},22),
+ table:tex((R)=>{R(0,0,16,16,'#9c6b3a');R(0,0,16,4,'#b5824a');R(1,1,14,2,'#c8965c');R(0,4,16,1,'#5b3a1e');R(3,7,4,6,'#6b6b6b');R(9,6,2,8,'#8a5a2b');R(8,6,4,2,'#9a9a9a')},23),
+};
+
+/* ═════════ 果果（照三视图：黑碎发、红T恤+蓝圆、灰印花袖、藏蓝裤、光脚）═════════ */
+const PAL={k:'#1d1712',s:'#f2c29b',e:'#2a1a10',c:'#f39a8a',m:'#b5463c',r:'#e0503a',b:'#2aa7e0',w:'#fff5e0',g:'#d8d6d0',n:'#1f2a5a'};
+const TOP=["...kkkkkk...","..kkkkkkkkk.",".kkkkkkkkkkk",".kkkkkkkkkkk",".kkskkskkskk",".kssssssssk.","ssssessssess",".sssesssses.",".scssssssc..","..sssssmms..","...ssssss...","..rrrrrrrr..",".rrrrrrrrrr.","grrrbbbbrrrg","ggrrbbwbrrgg","sgrrbbbbrrgs","s.rrrrrrrr.s","..nnnnnnnn.."];
+const LEGS=[["..nnn..nnn..","..nnn..nnn..","..nnn..nnn..",".sss....sss."],
+            [".nnn....nnn.",".nn......nn.","nnn......nnn","ss........ss"],
+            ["...nnnnnn...","...nn..nn...","..nnn..nnn..","..ss....ss.."]];
+const SPR=LEGS.map(l=>{const rows=TOP.concat(l);const mk=flip=>{const c=document.createElement('canvas');c.width=12;c.height=rows.length;const x=c.getContext('2d');
+  rows.forEach((row,y)=>[...row].forEach((ch,i)=>{if(ch!=='.'){x.fillStyle=PAL[ch];x.fillRect(flip?11-i:i,y,1,1)}}));return c};return[mk(false),mk(true)]});
+
+/* ═════════ 大字：把字画进 12×12 的格子，变成方块地形 ═════════ */
+function glyphBits(ch,N=12){const P=10,W=N*P;const c=document.createElement('canvas');c.width=c.height=W;const x=c.getContext('2d',{willReadFrequently:true});
+  x.fillStyle='#000';x.font=`900 ${W*.96}px 'Heiti SC','PingFang SC',sans-serif`;x.textAlign='center';x.textBaseline='middle';x.fillText(ch,W/2,W/2+W*.04);
+  const d=x.getImageData(0,0,W,W).data,bits=[];
+  for(let r=0;r<N;r++){bits.push([]);for(let cc=0;cc<N;cc++){let s=0;for(let yy=0;yy<P;yy++)for(let xx=0;xx<P;xx++)s+=d[((r*P+yy)*W+cc*P+xx)*4+3];bits[r].push(s/(P*P*255)>.3)}}
+  return bits}
+
+/* ═════════ 关卡 ═════════ */
+const T=16,ROWS=17,GR=14,COLS=168,VH=272;
+const SOLID=new Set([1,2,4,5,6,9,14]); // 12 = 大字顶面（只能从上面踩），13 = 大字身子（穿得过去），14 = 偷字怪的身子和场地的空气墙（不画）
+let CH=['日','月','山','木','人'],TH=THEMES.forest,themeKey='forest';
+let map,Q,DOORS,SIGNS,CPS,DECO,GIANTS,STATIONS,PLAZA,FLAG,flags,task=null,hasA,hasC,goals,pairs;
+function others(t,n){let o=shuffle(CH.filter(z=>z!==t));if(o.length<n)o=o.concat(shuffle((ZI[t]?.near||['大','小','人']).filter(z=>!CH.includes(z))));return o.slice(0,n)}
+function buildLevel(){
+  TILE[1]=TX[TH.top];TILE[2]=TX[TH.fill];
+  map=[...Array(ROWS)].map(()=>new Array(COLS).fill(0));
+  Q=new Map();DOORS=[];SIGNS=[];CPS=[];DECO=[];GIANTS=[];STATIONS=[];flags={};task=null;
+  const set=(c,r,v)=>{if(c>=0&&c<COLS&&r>=0&&r<ROWS)map[r][c]=v};
+  for(let c=0;c<COLS;c++){set(c,GR,1);set(c,GR+1,2);set(c,GR+2,2)}
+  const targets=shuffle(CH.slice());let ti=0;const nextT=()=>targets[(ti++)%targets.length];
+  const sign=(c,ch,base=GR*T,kind)=>{const s={x:c*T+8,base,kind:kind||pick(TH.signs),ch,wob:0,found:false,style:randStyle()};SIGNS.push(s);return s};
+  const amb=c=>sign(c,pick(CH));
+  const plat=(c0,c1,r)=>{for(let c=c0;c<=c1;c++)set(c,r,4)};
+  const qst=c=>{const t=nextT(),st={type:'q',x:(c-6)*T,target:t};
+    shuffle([t,...others(t,2)]).forEach((ch,i)=>{set(c+i,GR-4,6);Q.set((c+i)+','+(GR-4),{c:c+i,r:GR-4,ch,state:0,t:-9,st,style:randStyle()})});STATIONS.push(st)};
+  /* 只有笔画少的字才搭成大字：12×12 格子装不下鸭、家、路这种字，搭出来笔画是错的。用填充率当门槛（实测 ≤0.40 都认得出） */
+  const gch=shuffle(CH.filter(z=>{const b=glyphBits(z);let n=0;b.forEach(r=>r.forEach(x=>n+=x));return n/144<=.4}));
+  const giant=(c,ch)=>{if(!ch)return deco(c+5);const b=glyphBits(ch);for(let r=0;r<12;r++)for(let k=0;k<12;k++)if(b[r][k])set(c+k,GR-12+r,(r===0||!b[r-1][k])?12:13);GIANTS.push({c,ch,said:false,t:0})};
+  const deco=c=>DECO.push({c,seed:c});
+
+  deco(3);amb(7);qst(12);
+  giant(17,gch[0]);
+  qst(32);
+  hasA=pairs.length>=2;if(hasA)CPS.push({x:38*T,game:'A',deco:'easel'});
+  deco(41);
+  // 三扇门
+  const gc=52;plat(gc-8,gc-1,GR-3);plat(gc-4,gc-1,GR-6);
+  for(let r=0;r<GR;r++){set(gc,r,5);set(gc+1,r,5)}
+  const gt=nextT(),gst={type:'gate',x:(gc-10)*T,target:gt};STATIONS.push(gst);
+  const dch=shuffle([gt,...others(gt,2)]);
+  [[GR-2,GR-1],[GR-5,GR-4],[GR-8,GR-7]].forEach(([r0,r1],i)=>{set(gc,r0,9);set(gc,r1,9);set(gc+1,r0,0);set(gc+1,r1,0);
+    DOORS.push({c:gc,r0,r1,ch:dch[i],open:false,wob:-9,st:gst,style:randStyle()})});
+  flags.gc=gc;
+  amb(57);giant(60,gch[1]);
+  // 找字广场：每个字放两块牌子
+  const px=75,pool=[];while(pool.length<10)pool.push(...shuffle(CH.slice()));
+  const slots=[[1,0],[4,0],[7,0],[10,0],[13,0],[16,0],[19,0],[5.5,GR-5],[14.5,GR-5],[10,GR-8]];
+  plat(px+4,px+7,GR-5);plat(px+13,px+16,GR-5);plat(px+9,px+11,GR-8);
+  const psigns=slots.map(([rc,row],i)=>sign(px+rc,pool[i],row?row*T:GR*T));
+  const rounds=shuffle([...new Set(pool.slice(0,10))]).slice(0,3);
+  PLAZA={x:(px-1)*T,px,cx:(px+10.5)*T,signs:psigns,rounds,ri:0,done:false};
+  deco(99);qst(101);
+  giant(106,gch[2]);
+  qst(121);
+  hasC=goals.length>0;if(hasC)CPS.push({x:127*T,game:'C',deco:'table'});
+  amb(129);
+  // 偷字怪的场地：5 块字砖 + 5 块被偷空的牌子 + 偷字怪本身（6 格宽、7 格高，挡住去终点的路）
+  const bc=150;for(let r=GR-7;r<GR;r++)for(let k=0;k<6;k++)set(bc+k,r,14);
+  const bricks=shuffle(CH.slice()).map((ch,i)=>{const c=136+i*2,q={c,r:GR-4,ch,state:0,t:-9,st:BOSS_ST,style:randStyle()};set(c,GR-4,6);Q.set(c+','+(GR-4),q);return q});
+  const asigns=[0,1,2,3,4].map(i=>sign(135+i*2.5,'',GR*T,'board'));
+  BOSS={c:bc,x:133*T,cx:144*T,bricks,asigns,plates:CH.map(ch=>({ch,off:false})),started:false,phase:'idle',hurt:-9,laugh:-9,gone:false,card:null,bob:0};
+  FLAG={c:159};deco(163);
+}
+/* 连线、工作台用哪些字，由今天的字决定 */
+function planContent(){
+  pairs=CH.filter(z=>ZI[z]&&ZI[z].pic&&ZI[z].oracle).slice(0,3);
+  const el=CHAINS.filter(c=>CH.includes(c.r)||(CH.includes(c.a)&&CH.includes(c.b)));
+  el.sort((a,b)=>(CH.includes(b.r)?1:0)-(CH.includes(a.r)?1:0));
+  const seen=new Set();goals=el.filter(c=>!seen.has(c.r)&&seen.add(c.r)).slice(0,3);
+}
+
+/* ═════════ 状态 ═════════ */
+const TILE={4:TX.plank,5:TX.wall,9:TX.door};
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const lo=document.createElement('canvas'),lx=lo.getContext('2d');
+let SC=1,LW=400,camX=0,camLock=null,mode='setup',keys={},p,last=0,tSec=0;
+function resetPlayer(x=3*T){prog={x,t:tSec};p={x,y:GR*T-21.01,w:10,h:21,vx:0,vy:0,on:false,face:0,coy:0,anim:0,jumping:false}}
+function resize(){const d=devicePixelRatio||1;cv.width=innerWidth*d;cv.height=innerHeight*d;SC=cv.height/VH;LW=Math.ceil(cv.width/SC);lo.width=LW;lo.height=VH}
+addEventListener('resize',resize);resize();
+
+/* ═════════ 物理 ═════════ */
+const SPEED=95,G=1000,JUMP=380;
+const tileAt=(c,r)=>(r<0)?5:(c<0||c>=COLS||r>=ROWS)?5:map[r][c];
+function hits(x,y,w,h){const out=[];for(let r=Math.floor(y/T);r<=Math.floor((y+h-.01)/T);r++)for(let c=Math.floor(x/T);c<=Math.floor((x+w-.01)/T);c++)if(SOLID.has(tileAt(c,r)))out.push({c,r,v:tileAt(c,r)});return out}
+function step(dt){
+  const dir=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0);
+  p.vx+=(dir*SPEED-p.vx)*Math.min(1,dt*14);if(dir)p.face=dir<0?1:0;
+  p.coy-=dt;if(p.on)p.coy=.1;
+  if(keys.jumpReq&&p.coy>0){p.vy=-JUMP;p.coy=0;p.jumping=true;sfx('jump')}keys.jumpReq=false;
+  if(p.jumping&&!(keys.Space||keys.ArrowUp||keys.KeyW)&&p.vy<-150)p.vy=-150;
+  if(p.vy>=0)p.jumping=false;
+  p.vy=Math.min(p.vy+G*dt,600);
+  p.x+=p.vx*dt;if(p.x<0)p.x=0;
+  let hs=hits(p.x,p.y,p.w,p.h);
+  if(hs.length){const d=hs.find(h=>h.v===9);if(d)touchDoor(d.r);
+    if(p.vx>0)p.x=Math.min(...hs.map(h=>h.c))*T-p.w-.01;else if(p.vx<0)p.x=(Math.max(...hs.map(h=>h.c))+1)*T+.01;p.vx=0}
+  const prevFeet=p.y+p.h;
+  p.y+=p.vy*dt;p.on=false;hs=hits(p.x,p.y,p.w,p.h);
+  if(hs.length){
+    if(p.vy>0){const r=Math.min(...hs.map(h=>h.r));p.y=r*T-p.h-.01;p.on=true;p.vy=0}
+    else if(p.vy<0){const r=Math.max(...hs.map(h=>h.r));p.y=(r+1)*T+.01;p.vy=0;
+      const cx=p.x+p.w/2;const b=hs.filter(h=>h.r===r).sort((a,b)=>Math.abs((a.c+.5)*T-cx)-Math.abs((b.c+.5)*T-cx))[0];if(b)bump(b.c,b.r)}}
+  if(!p.on&&p.vy>0){const r=Math.floor((p.y+p.h)/T); // 大字顶面：只有从上面落下来才站得住
+    for(let c=Math.floor(p.x/T);c<=Math.floor((p.x+p.w-.01)/T);c++)if(tileAt(c,r)===12&&prevFeet<=r*T+.5){p.y=r*T-p.h-.01;p.vy=0;p.on=true;break}}
+  p.anim+=Math.abs(p.vx)*dt;
+  if(p.x>prog.x+8)prog={x:p.x,t:tSec};
+  triggers();
+}
+function triggers(){
+  for(const st of STATIONS)if(!st.started&&p.x>st.x){st.started=true;setTask(st);
+    if(st.type==='gate')speak('gate','find',{w:st.target});else speak('find',{w:st.target})}
+  for(const g of GIANTS){if(!g.said&&p.x+p.w>g.c*T+T&&p.x<(g.c+12)*T){g.said=true;g.t=tSec;speak('giant',{w:g.ch})}}
+  if(!PLAZA.done&&!PLAZA.on&&p.x>PLAZA.x){startPlaza();return}
+  for(const cp of CPS)if(!cp.done&&p.x>cp.x){cp.done=true;openMini(cp.game);return}
+  if(!flags.near&&p.x>129.5*T){flags.near=true;speak('boss_near')}
+  if(!BOSS.started&&p.x>BOSS.x){startBoss();return}
+  if(!flags.end&&p.x>FLAG.c*T){flags.end=true;openEnd()}
+}
+function setTask(st){task=st?{st,target:st.target,shown:false}:null;
+  const el=document.getElementById('task');el.classList.toggle('hidden',!task);
+  document.getElementById('tz').textContent=task&&!HARD?task.target:'？'} // 默认字和语音一起给；爸爸面板可改成「只念不显示」
+function revealTask(){if(!task)return;task.shown=true;document.getElementById('tz').textContent=task.target}
+let lastAgain=-9,HARD=false,prog={x:0,t:0};
+function wrong(target){ERR[target]=(ERR[target]||0)+1;sfx('thud');revealTask();if(tSec-lastAgain>1.6){lastAgain=tSec;speak('again',{w:target})}}
+function bump(c,r){const q=Q.get(c+','+r);if(q&&q.st===BOSS_ST){q.t=tSec;return bossBump(q)}if(!q||q.state)return sfx('thud');q.t=tSec;
+  if(task&&task.st===q.st&&q.ch===task.target){q.state=1;sfx('coin');speak('ok',{w:q.ch});burst(c*T+8,r*T);q.st.done=true;setTask(null)}
+  else if(q.st.done){sfx('thud')}
+  else{q.state=2;wrong(q.st.target)}}
+function touchDoor(r){const d=DOORS.find(d=>r>=d.r0&&r<=d.r1);if(!d||d.open)return;
+  if(d.ch===d.st.target){d.open=true;map[d.r0][d.c]=0;map[d.r1][d.c]=0;sfx('door');speak('door_ok',{w:d.ch});burst(d.c*T+8,d.r0*T+8);d.st.done=true;if(task&&task.st===d.st)setTask(null)}
+  else if(tSec-d.wob>1.4){d.wob=tSec;wrong(d.st.target)}}
+let parts=[];
+function burst(x,y){for(let i=0;i<14;i++)parts.push({x,y,vx:(R_()-.5)*120,vy:-60-R_()*120,t:0,c:pick(['#5cb043','#ffd84d','#ffffff'])})}
+
+/* ═════════ 找字广场：停下来，用鼠标 ═════════ */
+function startPlaza(){PLAZA.on=true;mode='find';keys={};p.vx=0;p.x=PLAZA.px*T-4;p.face=0; // 站到第一块牌子左边，别让字压在果果身上
+  camLock=PLAZA.cx;setBar('停下来了！用鼠标点牌子上的字');
+  PLAZA.need=0;speak('plaza').then(()=>{if(mode==='find')plazaRound()})}
+function plazaRound(){const t=PLAZA.rounds[PLAZA.ri];PLAZA.need=PLAZA.signs.filter(s=>s.ch===t).length;PLAZA.got=0;
+  setTask({target:t});speak('find',{w:t},...(PLAZA.need===2?['two']:[]))}
+async function plazaClick(wx,wy){if(!PLAZA.need)return;const t=PLAZA.rounds[PLAZA.ri];
+  for(const s of PLAZA.signs){const g=signGeom(s);if(Math.abs(wx-g.cx)<g.w/2+4&&Math.abs(wy-g.cy)<g.h/2+4){
+    if(s.found)return;
+    if(s.ch===t){s.found=true;PLAZA.got++;sfx('coin');burst(g.cx,g.cy);
+      if(PLAZA.got>=PLAZA.need){PLAZA.need=0;await speak({w:t});PLAZA.ri++;
+        if(PLAZA.ri<PLAZA.rounds.length)plazaRound();else{setTask(null);sfx('win');await speak('plaza_done');endPlaza()}}
+      else speak({w:t})}
+    else{s.wob=tSec;wrong(t)}return}}}
+function endPlaza(){PLAZA.done=true;PLAZA.on=false;camLock=null;setBar(null);if(mode==='find')mode='play';nudgeNow()}
+
+/* ═════════ 偷字怪：终极关，把今天的字从记忆里再找一遍 ═════════
+   哪个字一路上错得多，就多问一次；最后一招是它故意念错，让孩子来抓。
+   没有血条、没有倒计时、没有输——顶错了它只会嘿嘿笑，上面亮出提示字。 */
+const ERR={},BOSS_ST={type:'boss'},KAI={font:"'Kaiti SC','STKaiti',serif",weight:400,rot:0,sc:1};
+/* 盔甲按块数排：一行最多 4 块，居中 */
+function platePos(i,n){const per=n<=3?n:Math.ceil(n/2),row=Math.floor(i/per),cnt=row===0?Math.min(per,n):n-per,k=i%per;return[48+(k-(cnt-1)/2)*22,64+row*22]}
+let BOSS=null,SHOTS=[];
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function setBar(t){const b=document.getElementById('findbar');b.classList.toggle('hidden',!t);if(t)b.textContent=t}
+async function startBoss(){const B=BOSS;B.started=true;camLock=B.cx;for(let r=0;r<GR;r++)map[r][132]=14;
+  const extra=Object.entries(ERR).filter(([z,n])=>n>0&&CH.includes(z)).sort((a,b)=>b[1]-a[1]).slice(0,2).map(e=>e[0]);
+  B.rounds=shuffle(CH.slice());
+  extra.forEach(z=>{let i=B.rounds.length;if(B.rounds[i-1]===z)i--;B.rounds.splice(i,0,z)}); // 错得多的字，放到后面再问一次
+  B.plates=B.rounds.map(ch=>({ch,off:false})); // 要问几次就贴几块，盔甲掉光正好打完
+  B.ri=0;B.phase='intro';B.laugh=tSec;await speak('b_intro');bossRound()}
+function bossRound(){const B=BOSS;if(B.ri>=B.rounds.length)return bossTrick();
+  B.target=B.rounds[B.ri];B.phase='call';setTask({target:B.target});speak('find',{w:B.target})}
+function hitBoss(t){const B=BOSS,pl=B.plates.find(x=>x.ch===t&&!x.off);B.hurt=tSec;sfx('thud');
+  if(pl){pl.off=true;const s=B.asigns.find(s=>!s.ch);if(s){s.ch=t;s.found=true}} // 盔甲掉一块，字回到一块牌子上
+  burst((B.c+3)*T,(GR-4)*T)}
+async function bossBump(q){const B=BOSS;
+  if(B.phase==='call'){
+    if(q.ch===B.target){B.phase='wait';sfx('coin');setTask(null);
+      SHOTS.push({ch:q.ch,style:q.style,x0:q.c*T+8,y0:q.r*T-6,x1:(B.c+3)*T,y1:(GR-4)*T,t0:tSec});
+      await sleep(450);hitBoss(q.ch);await speak('b_ouch',{w:q.ch});B.ri++;bossRound()}
+    else{ERR[B.target]=(ERR[B.target]||0)+1;B.laugh=tSec;sfx('thud');revealTask();
+      if(tSec-lastAgain>1.6){lastAgain=tSec;speak('b_hehe','again',{w:B.target})}}}
+  else if(B.phase==='trick'){const cl=B.claims[B.ci],isRight=cl.show===cl.say,saysRight=q.ch==='⭕';
+    if(saysRight===isRight){B.phase='wait';sfx('coin');burst(q.c*T+8,q.r*T);B.hurt=tSec;
+      await speak(...(isRight?['b_right']:['b_caught',{w:cl.show}]));B.ci++;trickRound()}
+    else if(!isRight){B.laugh=tSec;sfx('thud');if(tSec-lastAgain>1.6){lastAgain=tSec;speak('look2','b_c_'+cl.say)}}
+    else{B.phase='wait';sfx('thud');await speak('b_notwrong',{w:cl.show});B.ci++;trickRound()}}
+  else sfx('thud')}
+async function bossTrick(){const B=BOSS;B.phase='trickintro';setTask(null);
+  B.bricks.forEach(q=>{map[q.r][q.c]=0;Q.delete(q.c+','+q.r)});
+  const mk=(c,ch)=>{map[GR-4][c]=6;const q={c,r:GR-4,ch,state:0,t:-9,st:BOSS_ST,style:{font:FONTS[0],weight:400,rot:0,sc:1}};Q.set(c+','+(GR-4),q);return q};
+  B.bricks=[mk(138,'⭕'),mk(142,'❌')];
+  const pool=shuffle(CH.slice()).sort((a,b)=>(ERR[b]||0)-(ERR[a]||0)); // 错得多的字优先拿来考
+  const a=pool[0],b=pool.find(z=>z!==a),c=pool[1];
+  B.claims=[R_()<.6?{show:a,say:b}:{show:c,say:c}];B.ci=0; // 只考一道：多半是故意念错，偶尔念对，免得孩子以为「永远选叉」
+  setBar('偷字怪举着的字，它念得对吗？念对了顶 ⭕，念错了顶 ❌');
+  B.laugh=tSec;await speak('b_trick');trickRound()}
+async function trickRound(){const B=BOSS;if(B.ci>=B.claims.length)return bossDefeat();
+  const cl=B.claims[B.ci];B.card=cl.show;B.phase='trick';B.laugh=tSec;
+  if(!(await playKeyOrSynth('b_c_'+cl.say,cl.say)))return}
+function playKeyOrSynth(k,t){const id=++seq;stopAll();if(muted)return Promise.resolve(true);return playKey(k).then(ok=>ok||id!==seq?true:synth('这个字念'+t).then(()=>true))}
+function bossClear(keep){const B=BOSS;if(!keep)B.gone=true;B.card=null;
+  for(let r=0;r<GR;r++){if(map[r][132]===14)map[r][132]=0;for(let k=0;k<6;k++)if(map[r][B.c+k]===14)map[r][B.c+k]=0}
+  B.bricks.forEach(q=>{map[q.r][q.c]=0;Q.delete(q.c+','+q.r)});
+  B.asigns.forEach((s,i)=>{if(!s.ch)s.ch=CH[i%CH.length];s.found=true});camLock=null}
+/* 打完的里程碑：偷字怪缩成小不点、跟在果果后面走；天上放礼花；横幅亮出今天的五个字 */
+async function bossDefeat(){const B=BOSS;B.phase='done';setBar(null);sfx('win');
+  bossClear(true);B.shrinkT=tSec;B.pet={x:(B.c+3)*T};
+  for(let i=0;i<30;i++)parts.push({x:(B.c+R_()*6)*T,y:(GR-7+R_()*7)*T,vx:(R_()-.5)*160,vy:-R_()*140,t:0,c:pick(['#ffd84d','#fff2c8','#ffffff'])});
+  await speak('b_bye');await speak('b_small');
+  fireworks(9);showBanner();nudgeNow();await speak('win_all')}
+let FW=[];
+function fireworks(n){for(let i=0;i<n;i++)setTimeout(()=>FW.push({x:camX+40+R_()*(LW-80),y:GR*T,vy:-230-R_()*60,ty:30+R_()*80,c:pick(['#e8322e','#ff9f1a','#1f7fe0','#2fb34a','#d43fc8','#7a3fe0'])}),i*420)}
+function stepFW(){FW=FW.filter(f=>{f.y+=f.vy/60;RL(f.x-camX,f.y,2,4,'#fff');RL(f.x-camX,f.y+4,1,6,f.c);
+  if(f.y>f.ty)return true;sfx('pop');for(let i=0;i<56;i++){const a=i/56*Math.PI*2,v=40+R_()*80;parts.push({x:f.x,y:f.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,t:0,c:R_()<.25?'#ffd84d':f.c,g:1.2,life:1.8,s:3})}return false})}
+function showBanner(){const b=document.getElementById('banner');b.innerHTML=`<div>🎉 今天的字，全拿回来啦！</div><div class="bz">${CH.map(z=>`<span>${z}</span>`).join('')}</div>`;
+  b.classList.remove('hidden');b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');clearTimeout(b._t);b._t=setTimeout(()=>b.classList.add('hidden'),6000)}
+function drawBoss(){const B=BOSS;if(!B||B.gone)return;
+  let sc=1,cx=(B.c+3)*T,hop=0,flick=false;
+  if(B.shrinkT!=null){const k=Math.min(1,(tSec-B.shrinkT)/1.4);sc=1-.78*k*k;flick=k<1&&Math.floor(tSec*14)%2===0;
+    if(k>=1){const tgt=p.x+(p.face?26:-14),mv=Math.abs(tgt-B.pet.x)>3;B.pet.x+=(tgt-B.pet.x)*.06;hop=mv?Math.abs(Math.sin(tSec*10))*20:0}
+    cx=B.pet.x}
+  B.bob=Math.round(Math.sin(tSec*3)*1.5)+(tSec-B.laugh<.5?Math.round(Math.sin(tSec*40)*2):0);
+  const ax=cx-camX,ay=GR*T;lx.save();lx.translate(ax,ay);lx.scale(sc,sc);lx.translate(-ax,-ay-hop);
+  const x0=cx-48-camX,y0=(GR-7)*T+B.bob,hurt=flick||tSec-B.hurt<.18,body=hurt?'#ffffff':'#7a5bb5',dk=hurt?'#e6e6e6':'#5f4596';
+  RL(x0+14,y0+98,22,14-B.bob,'#3d2b5e');RL(x0+60,y0+98,22,14-B.bob,'#3d2b5e');
+  const wave=Math.round(Math.sin(tSec*4)*4);RL(x0-8,y0+44+wave,12,26,body);RL(x0+92,y0+44-wave,12,26,body);
+  RL(x0+4,y0+6,88,94,body);for(let k=16;k<88;k+=16)RL(x0+4+k,y0+6,1,94,dk);for(let k=16;k<94;k+=16)RL(x0+4,y0+6+k,88,1,dk);
+  const look=Math.max(-5,Math.min(5,(p.x-cx)/40));
+  [[18,14],[56,14]].forEach(([ex,ey])=>{RL(x0+ex,y0+ey,22,20,'#fff');RL(x0+ex+7+look,y0+ey+6,8,9,'#18140F')});
+  const open=tSec-B.laugh<.6;RL(x0+28,y0+38,40,open?13:7,'#2a1a3a');for(let k=0;k<4;k++)RL(x0+31+k*10,y0+38,5,4,'#fff');
+  B.plates.forEach((pl,i)=>{const[px,py]=platePos(i,B.plates.length);RL(x0+px-11,y0+py-11,22,22,'#2a1a3a');RL(x0+px-10,y0+py-10,20,20,pl.off?dk:'#fff2c8')});
+  if(B.card){RL(x0+46,y0-10,4,18,'#6b4a2b');RL(x0+28,y0-42,40,34,'#5b3a1e');RL(x0+30,y0-40,36,30,'#fffdf7')}
+  lx.restore()}
+
+/* ═════════ 绘制 ═════════ */
+const INK={post:'#ffffff',lamp:'#8b2f22',board:'#2b1d0e',stele:'#2b2b2b',flag:'#ffffff'};
+function signGeom(s){
+  if(s.kind==='post')return{cx:s.x,cy:s.base-38,w:28,h:18};
+  if(s.kind==='lamp')return{cx:s.x+8,cy:s.base-44,w:14,h:16};
+  if(s.kind==='stele')return{cx:s.x,cy:s.base-14,w:18,h:24};
+  if(s.kind==='flag')return{cx:s.x+13,cy:s.base-48,w:24,h:16};
+  return{cx:s.x,cy:s.base-20,w:26,h:16}}
+const RL=(a,b,w,h,c)=>{lx.fillStyle=c;lx.fillRect(a,b,w,h)};
+function drawSign(s){const g=signGeom(s),x=Math.round(g.cx-g.w/2-camX),y=Math.round(g.cy-g.h/2),sx=Math.round(s.x-camX);
+  if(s.kind==='post'){RL(sx-1,s.base-30,3,30,'#6b4a2b');RL(x-1,y-1,g.w+2,g.h+2,'#0b3a26');RL(x,y,g.w,g.h,'#2e7d5b');RL(x+1,y+1,g.w-2,1,'#5aa77f')}
+  else if(s.kind==='lamp'){RL(sx-1,s.base-54,3,54,'#3a3a3a');RL(sx,s.base-54,10,2,'#3a3a3a');RL(x-1,y-1,g.w+2,g.h+2,'#2b2b2b');RL(x,y,g.w,g.h,'#ffd36b')}
+  else if(s.kind==='stele'){RL(x-2,y+g.h-2,g.w+4,4,'#6a6a6a');RL(x-1,y-1,g.w+2,g.h+2,'#5a5a5a');RL(x,y,g.w,g.h,'#a9a9a9');RL(x,y,g.w,2,'#c4c4c4')}
+  else if(s.kind==='flag'){RL(sx-1,s.base-58,2,58,'#e0e0e0');RL(x-1,y-1,g.w+2,g.h+2,'#7a1f17');RL(x,y,g.w,g.h,'#c0392b')}
+  else{RL(sx-1,s.base-12,3,12,'#6b4a2b');RL(x-1,y-1,g.w+2,g.h+2,'#5b3a1e');RL(x,y,g.w,g.h,'#c9a26b');RL(x,y,g.w,1,'#e0bd88')}
+  if(s.found){lx.strokeStyle='#ffe14a';lx.lineWidth=2;lx.strokeRect(x-3,y-3,g.w+6,g.h+6)}}
+function drawDeco(d){const x=d.c*T-camX;if(x<-80||x>LW+80)return;const r=rng(d.seed),b=GR*T;
+  if(TH.deco==='oak'){const h=4+(d.seed%2),top=GR-h;for(let k=top;k<GR;k++)lx.drawImage(TX.log,x,k*T);
+    for(let k=top-3;k<=top-1;k++)for(let c=-2;c<=2;c++)lx.drawImage(TX.leaves,x+c*T,k*T);for(let c=-1;c<=1;c++)lx.drawImage(TX.leaves,x+c*T,(top-4)*T)}
+  else if(TH.deco==='house'){const w=5*T,h=(5+(d.seed%3))*T,x0=x-2*T;RL(x0,b-h,w,h,'#d9c7a3');RL(x0-4,b-h-6,w+8,6,'#6a4b3a');
+    for(let yy=b-h+10;yy<b-20;yy+=18)for(let xx=x0+8;xx<x0+w-12;xx+=20)RL(xx,yy,10,10,'#7fb2d9');RL(x0+w/2-7,b-22,14,22,'#6b4a2b')}
+  else if(TH.deco==='pine'){RL(x+6,b-20,4,20,'#5b3a1e');[[0,46,22],[14,36,16],[26,26,10]].forEach(([dy,hgt,hw])=>{for(let k=0;k<hgt-dy-6;k++){const ww=Math.round((k/(hgt-dy-6))*hw);RL(x+8-ww,b-hgt+k,ww*2,1,k%5?'#2f6b3a':'#3f8a4a')}})}
+  else if(TH.deco==='palm'){for(let k=0;k<8;k++)RL(x+Math.round(Math.sin(k/3)*4),b-8-k*8,6,8,k%2?'#a07b4a':'#8a6a3e');const tx=x+Math.round(Math.sin(7/3)*4)+3,ty=b-70;
+    [[-22,4],[-14,-6],[0,-10],[14,-6],[22,4]].forEach(([dx,dy])=>{for(let k=0;k<6;k++)RL(tx+Math.round(dx*k/6),ty+Math.round(dy*k/6)+Math.round(k*k/6),5,3,'#3e9a3a')})}}
+function drawFar(){const b=GR*T;
+  if(themeKey==='forest'){for(let x=0;x<LW;x+=4){const wx=x+camX*.5;const h=30+Math.round(14*Math.sin(wx/60)+8*Math.sin(wx/23));RL(x,b-h,4,h,TH.far)}}
+  else if(themeKey==='city'){for(let i=-1;i<LW/28+2;i++){const wi=i+Math.floor(camX*.5/28),x=wi*28-camX*.5,h=50+((wi*73)%5)*16;RL(x,b-h,26,h,TH.far);for(let yy=b-h+6;yy<b-8;yy+=10)for(let xx=x+4;xx<x+22;xx+=8)RL(xx,yy,4,5,'#c9d6e4')}}
+  else if(themeKey==='mountain'){for(let i=-1;i<LW/90+2;i++){const wi=i+Math.floor(camX*.3/90),cx=wi*90-camX*.3+45,h=90+((wi*37)%3)*30;
+    for(let k=0;k<h;k++){const hw=Math.round(k*.9);RL(cx-hw,b-h+k,hw*2+1,1,k<14?'#f4f7fb':TH.far)}}}
+  else{RL(0,b-64,LW,64,TH.far);for(let i=0;i<LW/20+1;i++){const x=(i*20-(camX*.4)%20);RL(x,b-64+((i*7)%40)+4,8,1,'#7cc3ef')}
+    for(let i=-1;i<LW/160+2;i++){const wi=i+Math.floor(camX*.2/160),x=wi*160-camX*.2+60;RL(x,b-74,40,10,'#5f9e5a');RL(x+8,b-80,22,6,'#5f9e5a')}}}
+function frame(){
+  const tx=camLock!=null?camLock-LW/2:p.x-LW*.4;camX=Math.round(Math.max(0,Math.min(tx,COLS*T-LW)));
+  lx.imageSmoothingEnabled=false;
+  RL(0,0,LW,VH,TH.sky);
+  lx.fillStyle='#fff';for(let i=0;i<30;i++){const cx=((i*173)%2400)-camX*.25,cy=16+(i*37)%60;if(cx>-60&&cx<LW){lx.fillRect(cx,cy,40,8);lx.fillRect(cx+8,cy-6,22,6)}}
+  drawFar();
+  DECO.forEach(drawDeco);
+  CPS.forEach(cp=>{const x=Math.round(cp.x-camX),b=GR*T;
+    if(cp.deco==='easel'){RL(x,b-40,2,40,'#6b4a2b');RL(x+26,b-40,2,40,'#6b4a2b');RL(x-3,b-46,34,28,'#5b3a1e');RL(x-1,b-44,30,24,'#fffdf7');RL(x+9,b-38,10,10,'#ffb703');RL(x+3,b-26,22,4,'#5dbb3f')}
+    else lx.drawImage(TX.table,x,b-T)});
+  {const x=FLAG.c*T-camX;RL(x+7,GR*T-150,2,150,'#ddd');RL(x+9,GR*T-148,22,14,'#4f9a3a');RL(x+6,GR*T-154,4,4,'#ffd84d')}
+  SIGNS.forEach(s=>{if(s.x-camX>-40&&s.x-camX<LW+40)drawSign(s)});
+  const c0=Math.max(0,Math.floor(camX/T)),c1=Math.min(COLS-1,c0+Math.ceil(LW/T)+1),gt=TX[TH.giant];
+  for(let r=0;r<ROWS;r++)for(let c=c0;c<=c1;c++){const v=map[r][c];if(!v)continue;const x=c*T-camX,y=r*T;
+    if(v===6){const q=Q.get(c+','+r);const im=q.state===1?TX.qok:q.state===2?TX.qno:TX.q;lx.drawImage(im,x,y+(tSec-q.t<.15?-3:0));continue}
+    if(v===14)continue;
+    if(v===12||v===13){lx.drawImage(gt,x,y);if(v===12)RL(x,y,16,2,'rgba(255,255,255,.55)');else RL(x,y,16,16,'rgba(0,0,0,.12)');continue}
+    lx.drawImage(TILE[v],x,y)}
+  DOORS.forEach(d=>{if(d.open)RL(d.c*T-camX,d.r0*T,3,32,'#3a2412')});
+  drawBoss();
+  const fr=!p.on?2:(Math.abs(p.vx)>10?(Math.floor(p.anim/10)%2):0);
+  lx.drawImage(SPR[fr][p.face],Math.round(p.x-1-camX),Math.round(p.y-1));
+  stepFW();
+  parts=parts.filter(q=>(q.t+=1/60)<(q.life||1.2));parts.forEach(q=>{q.vy+=(q.g??6);q.x+=q.vx/60;q.y+=q.vy/60;RL(q.x-camX,q.y,q.s||2,q.s||2,q.c)});
+  ctx.imageSmoothingEnabled=false;ctx.drawImage(lo,0,0,LW*SC,VH*SC);
+  // 字在高清层上画，不跟着像素化——字一糊，笔画就错了
+  SIGNS.forEach(s=>{const g=signGeom(s);const wob=tSec-s.wob<.4?Math.sin((tSec-s.wob)*50)*.08:0;zi(s.ch,g.cx,g.cy,Math.min(g.w,g.h)*.82,s.style,INK[s.kind],s.found,wob)});
+  Q.forEach(q=>{const dy=tSec-q.t<.15?-3:0;zi(q.ch,q.c*T+8,q.r*T+8+dy,13,q.style,q.state===2?'#c9bba0':'#4a2a00',q.state===1)});
+  DOORS.forEach(d=>{if(!d.open){const wob=tSec-d.wob<.4?Math.sin((tSec-d.wob)*50)*.1:0;zi(d.ch,d.c*T+8,d.r0*T+12,12,d.style,'#ffe9c7',false,wob)}});
+  GIANTS.forEach(g=>{if(g.said)zi(g.ch,(g.c+6)*T,14,20,KAI,'#18140F',tSec-g.t<2.5)});
+  if(BOSS&&!BOSS.gone){const y0=(GR-7)*T+BOSS.bob;
+    BOSS.plates.forEach((pl,i)=>{if(!pl.off){const[px,py]=platePos(i,BOSS.plates.length);zi(pl.ch,BOSS.c*T+px,y0+py,15,KAI,'#4a2a00')}});
+    if(BOSS.card)zi(BOSS.card,BOSS.c*T+48,y0-24,24,KAI,'#18140F')}
+  drawNudge();
+  SHOTS=SHOTS.filter(sh=>{const k=(tSec-sh.t0)/.45;if(k>1)return false;zi(sh.ch,sh.x0+(sh.x1-sh.x0)*k,sh.y0+(sh.y1-sh.y0)*k-Math.sin(Math.PI*k)*40,18,sh.style,'#4a2a00',true);return true});
+}
+/* 停下来不知道干嘛时：屏幕右边跳一个「往右走 →」（孩子不一定听得进语音） */
+function drawNudge(){if(mode!=='play'||camLock!=null||flags.end||tSec-prog.t<2.5)return;
+  if(BOSS&&BOSS.started&&BOSS.phase!=='done')return;
+  const u=SC,x=cv.width-46*u+Math.sin(tSec*7)*5*u,y=(GR-4)*T*u;
+  ctx.save();ctx.translate(x,y);ctx.lineJoin='miter';ctx.lineWidth=2.5*u;ctx.strokeStyle='#18140F';ctx.fillStyle='#ffcf3a';
+  ctx.beginPath();ctx.moveTo(-26*u,-7*u);ctx.lineTo(4*u,-7*u);ctx.lineTo(4*u,-16*u);ctx.lineTo(24*u,0);ctx.lineTo(4*u,16*u);ctx.lineTo(4*u,7*u);ctx.lineTo(-26*u,7*u);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.font=`bold ${10*u}px 'PingFang SC',sans-serif`;ctx.textAlign='center';ctx.lineWidth=3*u;ctx.strokeText('往右走',-2*u,-24*u);ctx.fillStyle='#fff';ctx.fillText('往右走',-2*u,-24*u);
+  ctx.restore()}
+function zi(ch,wx,wy,size,st,color,glow,wob=0){if(wx-camX<-40||wx-camX>LW+40)return;
+  const sz=size*st.sc*SC;ctx.save();ctx.translate((wx-camX)*SC,wy*SC);ctx.rotate(st.rot+wob);
+  ctx.font=`${sz}px ${st.font}`;ctx.textAlign='center';ctx.textBaseline='middle';
+  if(glow){ctx.shadowColor='#ffe14a';ctx.shadowBlur=sz*.5}
+  ctx.fillStyle=color;ctx.fillText(ch,0,sz*.04);
+  if(st.weight>400){ctx.strokeStyle=color;ctx.lineWidth=sz*(st.weight===900?.06:.03);ctx.strokeText(ch,0,sz*.04)}
+  ctx.restore()}
+function loop(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;tSec+=dt;
+  if(mode==='play')step(dt);
+  if(p&&map)frame();requestAnimationFrame(loop)}
+
+/* ═════════ 输入 ═════════ */
+addEventListener('keydown',e=>{if(mode==='setup')return;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
+  if(!keys[e.code]&&(e.code==='Space'||e.code==='ArrowUp'||e.code==='KeyW'))keys.jumpReq=true;keys[e.code]=true});
+addEventListener('keyup',e=>{keys[e.code]=false});
+cv.addEventListener('click',e=>{if(mode!=='find')return;const d=devicePixelRatio||1;plazaClick(e.clientX*d/SC+camX,e.clientY*d/SC)});
+document.getElementById('task').onclick=()=>{if(task)speak('find',{w:task.target})};
+
+/* ═════════ 浮层 ═════════ */
+const ov=document.getElementById('ov'),ovb=document.getElementById('ovb');
+function show(html){ovb.innerHTML=html;ov.classList.remove('hidden');ovb.scrollTop=0}
+function hide(){ov.classList.add('hidden');ovb.innerHTML=''}
+function resume(){hide();mode='play';keys={};p.vx=0;nudgeNow()}
+function nudgeNow(){prog={x:p.x,t:tSec-3}}
+function openMini(g){mode='mini';keys={};({A:openA,C:openC})[g]()}
+
+function openIntro(){mode='intro';
+  show(`<h2>今天的字</h2><p class="sub">点一下，听一听。</p><div class="row" id="zc">${CH.map(z=>`<div class="zcard" data-z="${z}"><span class="zi">${z}</span><small>${ZI[z]?.py||''}</small></div>`).join('')}</div>
+    <div class="row" style="margin-top:18px"><button class="btn big go" id="goB">出发！</button></div>`);
+  const cards=[...document.querySelectorAll('.zcard')];
+  cards.forEach(c=>c.onclick=()=>{cards.forEach(x=>x.classList.remove('on'));c.classList.add('on');speak({w:c.dataset.z})});
+  (async()=>{const id=seq+1;await speak('intro');for(const c of cards){if(mode!=='intro'||seq>id)return;cards.forEach(x=>x.classList.remove('on'));c.classList.add('on');await speak({w:c.dataset.z})}cards.forEach(x=>x.classList.remove('on'))})();
+  document.getElementById('goB').onclick=()=>{resume();speak('go')}}
+
+// 连线：古时候的字（淡淡的画垫在底下）↔ 今天的字
+function openA(){const L=shuffle(pairs.slice()),Rr=shuffle(pairs.slice());
+  show(`<h2>古时候的字，连一连</h2><p class="sub">先点左边，再点右边。底下淡淡的是它画的东西。</p>
+    <div class="match" id="mt"><svg class="lines" id="ln"></svg><div class="col" id="cl"></div><div class="col" id="cr"></div></div>
+    <div class="dad">给爸爸：只有画得出来的字才进这一关（象形字）。形声字没有「画变成字」这回事，不硬画。</div>`);
+  const cl=document.getElementById('cl'),cr=document.getElementById('cr');let sel=null,done=0;
+  L.forEach(z=>{const d=document.createElement('div');d.className='card';d.dataset.k=z;d.innerHTML=`<div class="pb">${ZI[z].pic}</div>${ZI[z].oracle}`;
+    d.onclick=()=>{if(d.classList.contains('ok'))return;cl.querySelectorAll('.card').forEach(c=>c.classList.remove('sel'));d.classList.add('sel');sel=d};cl.appendChild(d)});
+  Rr.forEach(z=>{const d=document.createElement('div');d.className='card';d.innerHTML=`<span class="zi">${z}</span>`;
+    d.onclick=async()=>{if(!sel||d.classList.contains('ok'))return;
+      if(sel.dataset.k===z){const a=sel;a.classList.remove('sel');a.classList.add('ok');d.classList.add('ok');sel=null;line(a,d);sfx('coin');done++;
+        await speak({w:z});if(done===L.length){sfx('win');await speak('A_done');ovb.insertAdjacentHTML('beforeend',`<div class="row" style="margin-top:14px"><button class="btn big go" id="gA">继续闯关 ▶</button></div>`);document.getElementById('gA').onclick=resume}}
+      else{d.classList.remove('shake');void d.offsetWidth;d.classList.add('shake');sfx('thud')}};cr.appendChild(d)});
+  const line=(a,b)=>{const m=document.getElementById('mt').getBoundingClientRect(),ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect();
+    document.getElementById('ln').insertAdjacentHTML('beforeend',`<line x1="${ra.right-m.left}" y1="${ra.top+ra.height/2-m.top}" x2="${rb.left-m.left}" y2="${rb.top+rb.height/2-m.top}" stroke="#4f9a3a" stroke-width="6"/>`)};
+  speak('A_intro')}
+
+// 工作台
+function openC(){const grid=[null,null,null],made=new Set();
+  const recipes={};goals.forEach(g=>{recipes[[g.a,g.b].sort().join('')]=g.r;if(EXTRA_RECIPE[g.r])recipes[EXTRA_RECIPE[g.r].slice().sort().join('')]=g.r});
+  const inv=[...new Set(goals.flatMap(g=>[g.a,g.b]))];
+  const KN={x:'会意字：真的字源',s:'形声字：一半表意思，一半表读音',j:'助记：不是字源，只帮着记字形',w:'古书的讲法，有争议'};
+  show(`<h2>工作台：把字拼起来</h2><p class="sub">点下面的格子放进去，点上面的格子拿出来。右边是要拼出来的字。</p>
+    <div class="craft"><div><div class="row" style="gap:6px"><div class="slot g0"></div><div class="slot g1"></div><div class="slot g2"></div>
+      <span class="arrow">➜</span><div class="slot out" id="out"></div></div><div class="inv" id="inv"></div></div><div class="goal" id="goal"></div></div>
+    <div class="dad">给爸爸：每个要拼的字下面写着它是哪一类，讲法不一样，别讲串。放错了格子不出东西，让他自己试。</div>`);
+  const goal=document.getElementById('goal');
+  goals.forEach(g=>{const d=document.createElement('div');d.className='g';d.id='g_'+g.r;
+    if(PICS[g.r])d.appendChild(PICS[g.r]());else if(ZI[g.r]?.pic)d.insertAdjacentHTML('beforeend',ZI[g.r].pic);
+    d.insertAdjacentHTML('beforeend',`<span class="zi">？</span><span class="t">${plain(g.t)}<i>${KN[g.k]}</i></span>`);goal.appendChild(d)});
+  const recipe=()=>recipes[grid.filter(Boolean).sort().join('')]||null;
+  const render=()=>{grid.forEach((v,i)=>{ovb.querySelector('.g'+i).innerHTML=v?`<span class="zi">${v}</span>`:''});
+    const r=recipe(),o=document.getElementById('out');o.innerHTML=r?`<span class="zi">${r}</span>`:'';o.classList.toggle('ready',!!r);
+    document.getElementById('inv').innerHTML=inv.map(v=>`<div class="slot" data-v="${v}"><span class="zi">${v}</span><small>∞</small></div>`).join('');
+    document.querySelectorAll('#inv .slot').forEach(s=>s.onclick=()=>{const i=grid.indexOf(null);if(i<0)return sfx('thud');grid[i]=s.dataset.v;sfx('jump');render()})};
+  [0,1,2].forEach(i=>ovb.querySelector('.g'+i).onclick=()=>{if(grid[i]){grid[i]=null;render()}});
+  document.getElementById('out').onclick=async()=>{const r=recipe();if(!r)return;grid.fill(null);sfx('coin');render();
+    const el=document.getElementById('g_'+r);el.classList.add('done');el.querySelector('.zi').textContent=r;made.add(r);
+    await speak({k:r});
+    if(made.size===goals.length){sfx('win');await speak('C_done');ovb.insertAdjacentHTML('beforeend',`<div class="row" style="margin-top:14px"><button class="btn big go" id="gC">去终点 ▶</button></div>`);document.getElementById('gC').onclick=resume}};
+  render();speak('C_intro')}
+
+// 终点：钥匙在现实里
+/* ═════════ 认字墙：攒的是「在外面认出来的字」，不是分数 ═════════
+   只有爸爸在现实里确认过的字才上墙；玩得多不会多，认出来才会多。存在这台电脑的浏览器里（localStorage）。 */
+const KNOWN_KEY='guoguo_known_v1';
+function loadKnown(){try{return JSON.parse(localStorage.getItem(KNOWN_KEY))||{}}catch(e){return{}}}
+function saveKnown(k){try{localStorage.setItem(KNOWN_KEY,JSON.stringify(k))}catch(e){}}
+const today=()=>new Date().toISOString().slice(0,10);
+function renderKnownWall(fresh){const k=loadKnown(),zs=Object.keys(k).sort((a,b)=>k[a]<k[b]?-1:1),el=document.getElementById('kwall');if(!el)return;
+  document.getElementById('kcount').textContent=zs.length;
+  el.innerHTML=zs.length?zs.map(z=>`<span class="${z===fresh?'new':''}${k[z]===today()?' td':''}" title="${k[z]} 认出来的">${z}</span>`).join(''):'<i>还空着。在外面认出一个字，就点亮上面那个字，它会住到这面墙上。</i>'}
+function renderKnownBadge(){const n=Object.keys(loadKnown()).length,b=document.getElementById('kbadge');b.textContent=n?`果果已经认识 ${n} 个字`:'';
+  wallEl.querySelectorAll('.wz').forEach(w=>w.classList.toggle('known',!!loadKnown()[w.dataset.z]))}
+function openEnd(){mode='end';sfx('win');setTask(null);const k0=loadKnown();
+  show(`<h2>🏁 到终点啦！</h2><p class="sub">今天的字都见过好几次了。现在去家里、路上找一找——在外面认出哪个，就点亮哪个，它会住到下面的认字墙上。</p>
+    <div class="real">${CH.map(z=>`<label data-z="${z}" class="${k0[z]?'on':''}"><span class="zi">${z}</span>在外面找到了</label>`).join('')}</div>
+    <div class="kw"><div class="kh">🧱 果果的认字墙 · 已经认识 <b id="kcount">0</b> 个字</div><div id="kwall"></div></div>
+    <div class="row"><button class="btn big go" id="again">换个地方再玩</button><button class="btn big" id="newz">换一组字</button></div>
+    <div class="dad">给爸爸：点亮要等他在外面真的认出来以后再点，不是在屏幕上点着玩的。墙上攒的是认出来的字，不是分数——玩得多不会多，认出来才会多。到 10 个、30 个、100 个时要不要在现实里庆祝一下，由你定。
+      <a href="#" id="kclear" style="margin-left:8px;color:#8b2f22">清空认字墙</a></div>`);
+  renderKnownWall();
+  document.getElementById('kclear').onclick=e=>{e.preventDefault();if(confirm('清空果果的认字墙？（演示前可以清一下）')){saveKnown({});document.querySelectorAll('.real label').forEach(l=>l.classList.remove('on'));renderKnownWall()}};
+  document.querySelectorAll('.real label').forEach(l=>l.onclick=()=>{const z=l.dataset.z,k=loadKnown();l.classList.toggle('on');
+    if(l.classList.contains('on')){k[z]=k[z]||today();saveKnown(k);sfx('win');speak({w:z});renderKnownWall(z)}else{delete k[z];saveKnown(k);renderKnownWall()}});
+  speak('end','real');
+  document.getElementById('again').onclick=()=>openSetup(true);document.getElementById('newz').onclick=()=>openSetup(false)}
+
+/* ═════════ 设置页 ═════════ */
+const zin=document.getElementById('zin'),setupEl=document.getElementById('setup');
+function parseZ(){return[...new Set([...zin.value].filter(c=>/\p{Script=Han}/u.test(c)))]}
+function tagsOf(z,set){const t=[];const e=ZI[z];if(!e)return null;if(e.pic&&e.oracle)t.push('有画');
+  if(CHAINS.some(c=>(c.r===z)||((c.a===z||c.b===z)&&set.includes(c.a)&&set.includes(c.b))))t.push('能拼');t.push('找字');return t}
+/* 字墙：整个字库，叶凯给的那批排最前 */
+const WALL=[...new Set([...LIB_ORDER,...Object.keys(ZI)])].filter(z=>ZI[z]);
+const canPic=z=>!!(ZI[z]&&ZI[z].pic&&ZI[z].oracle),canPin=z=>CHAINS.some(c=>c.r===z||c.a===z||c.b===z);
+const wallEl=document.getElementById('wall');
+wallEl.innerHTML=WALL.map(z=>`<div class="wz${LIB_ORDER.includes(z)?' first':''}" data-z="${z}" title="${ZI[z].py||''}">${z}${canPic(z)?'<i class="d1"></i>':''}${canPin(z)?'<i class="d2"></i>':''}</div>`).join('');
+wallEl.querySelectorAll('.wz').forEach(w=>w.onclick=()=>{const z=parseZ(),c=w.dataset.z;
+  if(z.includes(c))zin.value=z.filter(x=>x!==c).join('');else if(z.length<5){zin.value=z.join('')+c;speak({w:c})}else{sfx('thud');return}renderChips()});
+function renderChips(){const z=parseZ();
+  wallEl.querySelectorAll('.wz').forEach(w=>w.classList.toggle('sel',z.includes(w.dataset.z)));
+  const unk=z.filter(c=>!ZI[c]);
+  const ok=z.length>=3&&z.length<=5;document.getElementById('msg').textContent=z.length<3?`还差 ${3-z.length} 个（至少 3 个）`:z.length>5?'最多 5 个，多了一局记不住':unk.length?`${unk.join('、')} 不在字库里，只玩找字和闯关`:`${z.length} 个，可以开始`;
+  document.getElementById('startB').disabled=!ok}
+zin.addEventListener('input',renderChips);
+const thEl=document.getElementById('themes');
+Object.entries(THEMES).forEach(([k,t])=>{const d=document.createElement('div');d.className='th'+(k===themeKey?' sel':'');d.dataset.k=k;
+  d.appendChild(pxCanvas(64,32,(R,x)=>{R(0,0,64,32,t.sky);R(0,14,64,10,t.far); // 缩略图：天、远景、地面、一小块大字的材质
+    for(let i=0;i<4;i++)x.drawImage(TX[t.top],i*16,24,16,8);x.drawImage(TX[t.giant],28,6,8,18);x.drawImage(TX[t.giant],18,12,28,4)}));
+  d.insertAdjacentHTML('beforeend',`<div>${t.n}</div>`);
+  d.onclick=()=>{themeKey=k;thEl.querySelectorAll('.th').forEach(x=>x.classList.toggle('sel',x===d))};thEl.appendChild(d)});
+function openSetup(keep){hide();renderKnownBadge();mode='setup';setupEl.classList.remove('hidden');['hud','tr','hint','dadp','findbar'].forEach(i=>document.getElementById(i).classList.add('hidden'));
+  if(!keep)zin.value='';renderChips()}
+document.getElementById('startB').onclick=()=>{CH=parseZ();TH=THEMES[themeKey];sfx('coin');setupEl.classList.add('hidden');
+  ['hud','tr','hint'].forEach(i=>document.getElementById(i).classList.remove('hidden'));document.getElementById('today').textContent=CH.join('');
+  newGame();openIntro()};
+function newGame(){FW=[];document.getElementById('banner').classList.add('hidden');for(const k in ERR)delete ERR[k];planContent();buildLevel();resetPlayer();camLock=null;parts=[];SHOTS=[];setTask(null);setBar(null)}
+
+/* ═════════ 爸爸面板 ═════════ */
+document.getElementById('muteB').onclick=e=>{muted=!muted;e.target.textContent=muted?'🔇':'🔊';if(muted)stopAll()};
+document.getElementById('hardC').onchange=e=>{HARD=e.target.checked;if(task)setTask(task.st||{target:task.target})};
+document.getElementById('dadB').onclick=()=>document.getElementById('dadp').classList.toggle('hidden');
+document.querySelectorAll('#dadp [data-j]').forEach(b=>b.onclick=()=>{const j=b.dataset.j;hide();
+  if(j==='setup')return openSetup(true);
+  if(j==='intro')return openIntro();
+  if((j==='A'&&!hasA)||(j==='C'&&!hasC)){alert('今天这几个字没有'+(j==='A'?'画得出来的（至少要 2 个）':'能拼的')+'，这一关会自动跳过。');return}
+  if(j==='boss'){newGame();mode='play'}
+  const x=j==='end'?(FLAG.c-3)*T:j==='boss'?(BOSS.x-2*T):j==='gate'?(flags.gc-11)*T:j==='plaza'?PLAZA.x-T:CPS.find(c=>c.game===j).x-2*T;
+  if(PLAZA.on)endPlaza();
+  resetPlayer(x);CPS.forEach(c=>c.done=c.x<x);STATIONS.forEach(s=>{s.started=s.x<x});GIANTS.forEach(g=>g.said=(g.c+12)*T<x);
+  PLAZA.done=PLAZA.x<x;flags.near=x>129.5*T;if(x>BOSS.x&&!BOSS.gone){BOSS.started=true;bossClear()}flags.end=false;setTask(null);mode='play'});
+
+renderChips();renderKnownBadge();
+CH=parseZ().length>=3?parseZ():LIB_ORDER.slice(0,5); // 设置页背后先铺一关当背景
+planContent();buildLevel();resetPlayer();requestAnimationFrame(loop);
+</script>
+</body>
+</html>
